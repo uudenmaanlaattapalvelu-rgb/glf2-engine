@@ -1,3 +1,13 @@
+const http = require('http');
+const PORT = process.env.PORT || 10000;
+
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('GLF2 Engine 24/7 Cloud Active\n');
+}).listen(PORT, () => {
+  console.log(`🌐 GLF2 Health Check Web Listener running on port ${PORT}`);
+});
+
 // GLF2 (GoodLifeFor2) - Algorithmic Sports Trading Engine
 const axios = require('axios');
 
