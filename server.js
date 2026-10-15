@@ -1,19 +1,16 @@
 const http = require('http');
 const PORT = process.env.PORT || 10000;
 
+// HTTP Health Check Listener for Render
 http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('GLF2 Engine 24/7 Cloud Active\n');
+  res.end('GLF2 Engine Mock Simulation Active 24/7\n');
 }).listen(PORT, () => {
-  console.log(`🌐 GLF2 Health Check Web Listener running on port ${PORT}`);
+  console.log(`🌐 GLF2 Health Check Listener active on port ${PORT}`);
 });
 
-// GLF2 (GoodLifeFor2) - Algorithmic Sports Trading Engine
-const axios = require('axios');
-
-const API_KEY = '2262ca2e12055503c5d8cfa105b9bfa3';
-const BASE_URL = 'https://api.the-odds-api.com/v4/sports';
-const CHECK_INTERVAL_MS = 30000;
+// Engine Configuration
+const CHECK_INTERVAL_MS = 10000; // Runs every 10 seconds in mock mode
 
 let systemState = {
   activeThreads: [
@@ -26,81 +23,65 @@ let systemState = {
 
 console.log(`
 ===================================================
- 🚀 GLF2 (GoodLifeFor2) TRADING ENGINE ONLINE
+ 🚀 GLF2 (GoodLifeFor2) SIMULATION ENGINE ONLINE
  🎯 TARGET ODDS RANGE: 1.01 - 1.05
  🔄 SPLIT MODEL: €100 -> €200 (Auto-Multiplication)
+ 🧪 MODE: MOCK DATA SIMULATOR (0 API Credits Used)
 ===================================================
 `);
 
-async function fetchLiveSportsOdds() {
-  try {
-    const sportsResponse = await axios.get(`${BASE_URL}?apiKey=${API_KEY}`);
-    const activeSports = sportsResponse.data.slice(0, 5);
+// Mock Data Generator
+function generateMockMatch() {
+  const sports = ['Soccer - Premier League', 'Tennis - ATP', 'Basketball - NBA', 'Soccer - La Liga'];
+  const teams = [
+    { home: 'Real Madrid', away: 'Getafe', pick: 'Real Madrid Win' },
+    { home: 'Man City', away: 'Burnley', pick: 'Man City Win' },
+    { home: 'Alcaraz', away: 'Qualifier', pick: 'Alcaraz Win' },
+    { home: 'Celtic', away: 'Dundee', pick: 'Celtic Win' }
+  ];
 
-    console.log(`[GLF2 Engine] Scanning ${activeSports.length} active sports markets...`);
+  const match = teams[Math.floor(Math.random() * teams.length)];
+  const sport = sports[Math.floor(Math.random() * sports.length)];
+  const odds = parseFloat((1.01 + Math.random() * 0.04).toFixed(2));
 
-    for (const sport of activeSports) {
-      const oddsResponse = await axios.get(`${BASE_URL}/${sport.key}/odds`, {
-        params: {
-          apiKey: API_KEY,
-          regions: 'eu,us',
-          markets: 'h2h',
-          oddsFormat: 'decimal'
-        }
-      });
-
-      processEventsForGLF2(oddsResponse.data, sport.title);
-    }
-  } catch (error) {
-    if (error.response && error.response.status === 401) {
-      console.error(`❌ [GLF2 Error] Invalid API key.`);
-    } else {
-      console.error(`⚠️ [GLF2 Feed Notice] Fetching odds: ${error.message}`);
-    }
-  }
+  return {
+    id: `mock-${Date.now()}`,
+    sport: sport,
+    homeTeam: match.home,
+    awayTeam: match.away,
+    selection: match.pick,
+    odds: odds,
+    bookmaker: 'Simulated Bookmaker'
+  };
 }
 
-function processEventsForGLF2(events, sportName) {
-  for (const event of events) {
-    if (!event.bookmakers || event.bookmakers.length === 0) continue;
-    const bookmaker = event.bookmakers[0];
-    const market = bookmaker.markets.find(m => m.key === 'h2h');
-    if (!market) continue;
-
-    for (const outcome of market.outcomes) {
-      if (outcome.price >= 1.01 && outcome.price <= 1.05) {
-        executeGLF2Trade({
-          id: event.id,
-          sport: sportName,
-          homeTeam: event.home_team,
-          awayTeam: event.away_team,
-          selection: outcome.name,
-          odds: outcome.price,
-          bookmaker: bookmaker.title
-        });
-        return;
-      }
-    }
+function runEngineCycle() {
+  console.log(`\n[GLF2 Engine] Scanning simulated sports markets...`);
+  
+  const huntingThread = systemState.activeThreads.find(t => t.status === 'HUNTING');
+  if (!huntingThread) {
+    console.log(`⏳ [GLF2 Status] All ${systemState.activeThreads.length} thread(s) currently busy in trades.`);
+    return;
   }
+
+  const match = generateMockMatch();
+  executeGLF2Trade(match, huntingThread);
 }
 
-function executeGLF2Trade(matchData) {
-  let thread = systemState.activeThreads.find(t => t.status === 'HUNTING');
-  if (!thread) return;
-
+function executeGLF2Trade(matchData, thread) {
   thread.status = 'IN_PLAY';
   
-  console.log(`\n---------------------------------------------------`);
+  console.log(`---------------------------------------------------`);
   console.log(`⚡ [GLF2 ORDER PLACED] ${thread.id}`);
   console.log(`🏆 Sport: ${matchData.sport} (${matchData.bookmaker})`);
-  console.log(`⚔️ Game: ${matchData.homeTeam} vs ${matchData.awayTeam}`);
-  console.log(`🎯 Selection: ${matchData.selection} @ Odds: ${matchData.odds}`);
+  console.log(`⚔️ Match: ${matchData.homeTeam} vs ${matchData.awayTeam}`);
+  console.log(`🎯 Pick: ${matchData.selection} @ Odds: ${matchData.odds}`);
   console.log(`💰 Stake: €100.00`);
-  console.log(`---------------------------------------------------\n`);
+  console.log(`---------------------------------------------------`);
 
   setTimeout(() => {
     handleTradeResult(thread, matchData.odds);
-  }, 5000);
+  }, 3000);
 }
 
 function handleTradeResult(thread, odds) {
@@ -109,7 +90,7 @@ function handleTradeResult(thread, odds) {
   systemState.completedBets++;
   thread.status = 'HUNTING';
 
-  console.log(`✅ [GLF2 WIN] ${thread.id} won +€${profit.toFixed(2)}! New Balance: €${thread.balance.toFixed(2)}`);
+  console.log(`✅ [GLF2 WIN] ${thread.id} won +€${profit.toFixed(2)}! New Thread Balance: €${thread.balance.toFixed(2)}`);
 
   if (thread.balance >= 200) {
     systemState.totalSplits++;
@@ -124,7 +105,7 @@ function handleTradeResult(thread, odds) {
       status: 'HUNTING'
     });
 
-    console.log(`✅ ${newThreadId} CREATED WITH €100.00! Total Threads: ${systemState.activeThreads.length}`);
+    console.log(`✅ ${newThreadId} CREATED WITH €100.00! Active Threads: ${systemState.activeThreads.length}`);
   }
 
   updateSystemSummary();
@@ -132,8 +113,8 @@ function handleTradeResult(thread, odds) {
 
 function updateSystemSummary() {
   systemState.totalSystemEquity = systemState.activeThreads.reduce((sum, t) => sum + t.balance, 0);
-  console.log(`\n📊 [GLF2 MONITOR] Active Threads: ${systemState.activeThreads.length} | Equity: €${systemState.totalSystemEquity.toFixed(2)} | Bets: ${systemState.completedBets}`);
+  console.log(`📊 [GLF2 METRICS] Active Threads: ${systemState.activeThreads.length} | Equity: €${systemState.totalSystemEquity.toFixed(2)} | Total Bets: ${systemState.completedBets} | Splits: ${systemState.totalSplits}\n`);
 }
 
-fetchLiveSportsOdds();
-setInterval(fetchLiveSportsOdds, CHECK_INTERVAL_MS);
+runEngineCycle();
+setInterval(runEngineCycle, CHECK_INTERVAL_MS);
